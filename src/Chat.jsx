@@ -1,6 +1,6 @@
 import React from 'react';
-import { ApolloClient, InMemoryCache, ApolloProvider, useQuery, gql } from '@apollo/client';
-import {Container, Row, Col, FormInput, Buttom} from 'shards-react';
+import { ApolloClient, InMemoryCache, ApolloProvider, useQuery, useMutation, gql } from '@apollo/client';
+import {Container, Row, Col, FormInput, Button} from 'shards-react';
 
 const client = new ApolloClient({
   uri: 'http://localhost:4000/',
@@ -15,6 +15,12 @@ query {
         user
     }
 }
+`;
+
+const POST_MESSAGE = gql`
+    mutation($user: String!, $content: String!) {
+    postMessage(user: $user, content: $content)
+    }
 `;
 
 const Messages = ({user}) => {
@@ -40,8 +46,9 @@ const Messages = ({user}) => {
                             borderRadius: 25, 
                             textAlign: 'center', 
                             fontSize: '18pt',
-                            paddingTop: 5}}>
-                            {messageUser.slice(0, 2).toUpperCase()}
+                            paddingTop: 5
+                            }}>
+                        {messageUser.slice(0, 2).toUpperCase()}
                         </div>
                     )}
                     <div style={{display: 'flex', 
@@ -51,7 +58,7 @@ const Messages = ({user}) => {
                                 borderRadius: '1em',
                                 maxWidth: '60%',
                                 }}>
-                        {content}
+                    {content}
                     </div>
                 </div>
             ))}
@@ -59,57 +66,66 @@ const Messages = ({user}) => {
     );
 }
 
-const Chat = () => {
-    const [state, setState] = React.useState({
-        user: 'Molezinha',
-        content: '',
-    });
-
-    const onSend = () => {
-        if(state.content.length > 0) {
-
-        }
-        stateSet({
+const Chat = () => {    
+        const [state, stateSet] = React.useState({
+          user: "Jack",
+          content: "",
+        });
+        const [postMessage] = useMutation(POST_MESSAGE);
+        const onSend = () => {
+          if (state.content.length > 0) {
+            postMessage({
+              variables: state,
+            });
+          }
+          stateSet({
             ...state,
-            content: '',
-        })
-    }
+            content: "",
+          });
+        };
 
     return (
         <Container>
-            <Messages user={state.user} />
-            <Row>
-                <Col xs={2} style={{padding: 0}}>
-                    <FormInput label="User" value={state.us} 
-                    onChange={(evt) => stateSet({
-                        ...state,
-                        user: evt.target.value,
-                    })} />
-                </Col>
-
-                <Col xs={8}>
-                    <FormInput label="Content" value={state.content} 
-                    onChange={(evt) => stateSet({
-                        ...state,
-                        user: evt.target.value,
-                    })}
-                        onkeyUp={(evt) => {
-                            if(evt.keyCode ===13) {
-                                onSend();
-                            }
-                        }}
-                    />
-                </Col>
-
-                <Col xs={2} style={{padding: 0}}>
-                    <Button onClick={() => onSend()}>
-                        Enviar
-                    </Button>
-                </Col>
-            </Row>
+          <Messages user={state.user} />
+          <Row>
+            <Col xs={2} style={{ padding: 0 }}>
+              <FormInput
+                label="User"
+                value={state.user}
+                onChange={(evt) =>
+                  stateSet({
+                    ...state,
+                    user: evt.target.value,
+                  })
+                }
+              />
+            </Col>
+            <Col xs={8}>
+              <FormInput
+                label="Content"
+                value={state.content}
+                onChange={(evt) =>
+                  stateSet({
+                    ...state,
+                    content: evt.target.value,
+                  })
+                }
+                onKeyUp={(evt) => {
+                  if (evt.keyCode === 13) {
+                    onSend();
+                  }
+                }}
+              />
+            </Col>
+            <Col xs={2} style={{ padding: 0 }}>
+              <Button onClick={() => onSend()} style={{ width: "100%" }}>
+                Send
+              </Button>
+            </Col>
+          </Row>
         </Container>
-    );
-};
+      );
+    };
 
 export default () => (
     <ApolloProvider client={client}>
